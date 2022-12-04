@@ -16,10 +16,61 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.dayThree();
+    this.dayFour();
   }
 
-  dayThree() {}
+  dayFour() {}
+
+  dayThree() {
+    this.call(3).subscribe((res) => {
+      const entries: string[] = res.split('\n');
+      console.log(entries);
+      let priorities = [];
+
+      const cleanLine = (line) =>
+        line.includes('/r') ? line.substring(0, line.length - 1) : line;
+      const alphaValLowerCase = (s) => s.charCodeAt(0) - 96;
+      const alphaValUpperCase = (s) => s.charCodeAt(0) - 65 + 27;
+      const isUpperCase = (s) => s.toUpperCase() === s;
+
+      //part 1
+      entries.forEach((rsLine) => {
+        rsLine = cleanLine(rsLine); //remove /r at end of string
+        const firstRS = rsLine.slice(0, rsLine.length / 2).split('');
+        const secondRS = rsLine
+          .slice(rsLine.length / 2, rsLine.length)
+          .split('');
+        //console.log({ rsLine, firstRS, secondRS });
+
+        const remained = firstRS.filter((e) => secondRS.includes(e))[0];
+        const remainedValue = isUpperCase(remained)
+          ? alphaValUpperCase(remained)
+          : alphaValLowerCase(remained);
+
+        priorities.push(remainedValue);
+
+        //console.log({ remained, remainedValue});
+      });
+      console.log('Part 1', { priorities, sum: _.sum(priorities) });
+
+      //part 2
+      priorities = []; //reset
+      _.chunk(entries, 3).forEach((group) => {
+        const string1 = cleanLine(group[0]).split('');
+        const string2 = cleanLine(group[1]).split('');
+        const string3 = cleanLine(group[2]).split('');
+        const result = string1.filter(
+          (e) => string2.includes(e) && string3.includes(e)
+        )[0];
+        const groupValue = isUpperCase(result)
+          ? alphaValUpperCase(result)
+          : alphaValLowerCase(result);
+
+        priorities.push(groupValue);
+      });
+      console.log('Part 2', { priorities, sum: _.sum(priorities) });
+    });
+  }
 
   dayTwo() {
     enum OpponentShapes {
