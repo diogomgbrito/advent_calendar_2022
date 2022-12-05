@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, VERSION } from '@angular/core';
-import { from, groupBy } from 'rxjs';
 import * as _ from 'lodash';
-import { init } from 'lodash/fp';
-import { min } from 'lodash';
+
+const cleanLine = (line) =>
+  line.includes('/r') ? line.substring(0, line.length - 1) : line;
 
 @Component({
   selector: 'my-app',
@@ -19,7 +19,35 @@ export class AppComponent implements OnInit {
     this.dayFour();
   }
 
-  dayFour() {}
+  dayFour() {
+    this.call(4).subscribe((res) => {
+      const entries: string[] = res.split('\n');
+      console.log({ entries });
+
+      const containted = entries.reduce((acc, val) => {
+        const sectionOne = val.split(',')[0];
+        const s1Init = Number(sectionOne.split('-')[0]);
+        const s1End = Number(sectionOne.split('-')[1]);
+        const sectionTwo = val.split(',')[1];
+        const s2Init = Number(sectionTwo.split('-')[0]);
+        const s2End = Number(cleanLine(sectionTwo.split('-')[1]));
+
+        //console.log({ val, s1Init, s1End, s2Init, s2End });
+        if (s2End <= s1End && s2Init <= s1End && s2Init >= s1Init) {
+          //console.log('true 1');
+          acc++;
+        }
+
+        if (s1End <= s2End && s1Init <= s2End && s1Init >= s2Init) {
+          //console.log('true 2');
+          acc++;
+        }
+
+        return acc;
+      }, 0);
+      console.log({ containted }); //607 nok; 
+    });
+  }
 
   dayThree() {
     this.call(3).subscribe((res) => {
@@ -27,8 +55,6 @@ export class AppComponent implements OnInit {
       console.log(entries);
       let priorities = [];
 
-      const cleanLine = (line) =>
-        line.includes('/r') ? line.substring(0, line.length - 1) : line;
       const alphaValLowerCase = (s) => s.charCodeAt(0) - 96;
       const alphaValUpperCase = (s) => s.charCodeAt(0) - 65 + 27;
       const isUpperCase = (s) => s.toUpperCase() === s;
