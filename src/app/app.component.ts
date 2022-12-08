@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, VERSION } from '@angular/core';
 import * as _ from 'lodash';
+import { slice } from 'lodash';
 
 const cleanLine = (line) =>
   line.includes('/r') ? line.substring(0, line.length - 1) : line;
@@ -16,10 +17,56 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.dayFive();
+    this.daySix();
   }
 
-  dayFive() {}
+  daySix() {}
+
+  dayFive() {
+    const stacks = {
+      1: ['B', 'P', 'N', 'Q', 'H', 'D', 'R', 'T'],
+      2: ['W', 'G', 'B', 'J', 'T', 'V'],
+      3: ['N', 'R', 'H', 'D', 'S', 'V', 'M', 'Q'],
+      4: ['P', 'Z', 'N', 'M', 'C'],
+      5: ['D', 'Z', 'B'],
+      6: ['V', 'C', 'W', 'Z'],
+      7: ['G', 'Z', 'N', 'C', 'V', 'Q', 'L', 'S'],
+      8: ['L', 'G', 'J', 'M', 'D', 'N', 'V'],
+      9: ['T', 'P', 'M', 'F', 'Z', 'C', 'G'],
+    };
+
+    this.call(5).subscribe((res) => {
+      let entries: string[] = res.split('\n');
+      entries = entries.slice(10, entries.length);
+      console.log({ entries });
+
+      entries.forEach((res) => {
+        const tmp = res.match(/(\d{1,2})/g).map((r) => parseInt(r));
+        const [amount, fromStack, toStack] = tmp;
+        //console.log({ amount, fromStack, toStack });
+
+        //part 1
+        /*for (let i = 0; i < amount; i++) {
+          stacks[toStack].push(stacks[fromStack].pop());
+        }*/
+
+        //part 2
+        const idxEnd = stacks[fromStack].length;
+        const idxInit = idxEnd - amount;
+        stacks[toStack] = stacks[toStack].concat(
+          stacks[fromStack].slice(idxInit, idxEnd)
+        );
+        stacks[fromStack].splice(idxInit, amount);
+      });
+
+      console.log({
+        stacks,
+        message: Object.values(stacks)
+          .map((s) => s[s.length - 1])
+          .join(''),
+      });
+    });
+  }
 
   dayFour() {
     this.call(4).subscribe((res) => {
