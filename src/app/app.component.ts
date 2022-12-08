@@ -16,8 +16,10 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.dayFour();
+    this.dayFive();
   }
+
+  dayFive() {}
 
   dayFour() {
     this.call(4).subscribe((res) => {
@@ -26,26 +28,30 @@ export class AppComponent implements OnInit {
 
       const containted = entries.reduce((acc, val) => {
         const sectionOne = val.split(',')[0];
-        const s1Init = Number(sectionOne.split('-')[0]);
-        const s1End = Number(sectionOne.split('-')[1]);
+        const s1Init = parseInt(sectionOne.split('-')[0]);
+        const s1End = parseInt(sectionOne.split('-')[1]);
         const sectionTwo = val.split(',')[1];
-        const s2Init = Number(sectionTwo.split('-')[0]);
-        const s2End = Number(cleanLine(sectionTwo.split('-')[1]));
+        const s2Init = parseInt(sectionTwo.split('-')[0]);
+        const s2End = parseInt(cleanLine(sectionTwo.split('-')[1]));
 
-        //console.log({ val, s1Init, s1End, s2Init, s2End });
-        if (s2End <= s1End && s2Init <= s1End && s2Init >= s1Init) {
-          //console.log('true 1');
+        //console.log({ s1Init, s1End, s2Init, s2End });
+        //part 1
+        if (s2End <= s1End && s2Init >= s1Init) {
+          acc++;
+        } else if (s2End >= s1End && s2Init <= s1Init) {
           acc++;
         }
-
-        if (s1End <= s2End && s1Init <= s2End && s1Init >= s2Init) {
-          //console.log('true 2');
+        //part 2
+        else if (
+          (s2Init >= s1Init && s2Init <= s1End) ||
+          (s2End <= s1End && s2End >= s1Init)
+        ) {
           acc++;
         }
 
         return acc;
       }, 0);
-      console.log({ containted }); //607 nok; 
+      console.log({ containted });
     });
   }
 
