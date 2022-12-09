@@ -17,10 +17,39 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.daySix();
+    this.daySeven();
   }
 
-  daySix() {}
+  daySeven() {}
+
+  daySix() {
+    this.call(6).subscribe((res) => {
+      const entry = res.split('');
+      console.log({ entry });
+
+      let startOfPacket = 0;
+      let startOfMessage = 0;
+
+      for (let i = 0; i < entry.length; i++) {
+        let data = entry.slice(i, i + 4);
+        let tmp = _.uniq(data);
+        //console.log('4--', ...data, '|', ...tmp);
+        //part 1
+        if (tmp.length === 4) {
+          startOfPacket = i + 4;
+        }
+
+        //part 2
+        data = entry.slice(i, i + 14);
+        tmp = _.uniq(data);
+        if (tmp.length === 14) {
+          startOfMessage = i + 14;
+        }
+      }
+
+      console.log({ startOfPacket, startOfMessage });
+    });
+  }
 
   dayFive() {
     const stacks = {
