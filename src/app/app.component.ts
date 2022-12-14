@@ -46,6 +46,7 @@ export class AppComponent implements OnInit {
       [key: string]: Disk | number;
     };
 
+
     const parsetInput = (entries: string[]): Entries => {
       return entries.map((entry) => {
         if (entry.includes('$')) {
@@ -76,7 +77,10 @@ export class AppComponent implements OnInit {
 
       const disk = { '/': {} };
       structure.forEach((line: Command | File | Dir) => {
-        console.log({ ...line }, _.findKey(disk, '/'));
+        console.log({ ...line }, _.get(disk, '/'));
+        if(line.type === 'command'){
+          console.log(_.get(line, ''))
+        }
       });
     });
   }
