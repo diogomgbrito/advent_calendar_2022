@@ -37,6 +37,7 @@ export class AppComponent implements OnInit {
       type: 'dir';
       size: null;
       name: string;
+      files?: File[];
     };
 
     type Entries = (Command | File | Dir)[];
@@ -57,7 +58,7 @@ export class AppComponent implements OnInit {
         } else {
           const [type, name] = entry.split(' ');
           if (type === 'dir') {
-            return { type, name } as Dir;
+            return { type, name, size: 0 } as Dir;
           } else {
             return { type: 'file', size: Number(type), name } as File;
           }
@@ -75,7 +76,7 @@ export class AppComponent implements OnInit {
 
       const disk = { '/': {} };
       structure.forEach((line: Command | File | Dir) => {
-        console.log({ ...line }, _.find(disk, '/'));
+        console.log({ ...line }, _.findKey(disk, '/'));
       });
     });
   }
