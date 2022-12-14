@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { slice } from 'lodash';
 
 const cleanLine = (line) =>
-  line.includes('/r') ? line.substring(0, line.length - 1) : line;
+  line.includes('\r') ? line.substring(0, line.length - 1) : line;
 
 @Component({
   selector: 'my-app',
@@ -20,7 +20,65 @@ export class AppComponent implements OnInit {
     this.daySeven();
   }
 
-  daySeven() {}
+  daySeven() {
+    type Command = {
+      type: 'command';
+      command: 'cd' | 'ls';
+      arg?: string;
+    };
+
+    type File = {
+      type: 'file';
+      size: number;
+      name: string;
+    };
+
+    type Dir = {
+      type: 'dir';
+      size: null;
+      name: string;
+    };
+
+    type Entries = (Command | File | Dir)[];
+
+    type Disk = {
+      [key: string]: Disk | number;
+    };
+
+    const parsetInput = (entries: string[]): Entries => {
+      return entries.map((entry) => {
+        if (entry.includes('$')) {
+          const [command, arg] = entry.split(' ').slice(1);
+          return {
+            type: 'command',
+            command,
+            arg: arg ?? '/',
+          } as Command;
+        } else {
+          const [type, name] = entry.split(' ');
+          if (type === 'dir') {
+            return { type, name } as Dir;
+          } else {
+            return { type: 'file', size: Number(type), name } as File;
+          }
+        }
+      });
+    };
+
+    this.call(7).subscribe((res) => {
+      const entries: string[] = res
+        .split('\n')
+        .map((l) => cleanLine(l))
+        .slice(0, 14);
+      const structure: Entries = parsetInput(entries);
+      console.log({ structure });
+
+      const disk = { '/': {} };
+      structure.forEach((line: Command | File | Dir) => {
+        console.log({ ...line }, _.find(disk, '/'));
+      });
+    });
+  }
 
   daySix() {
     this.call(6).subscribe((res) => {
