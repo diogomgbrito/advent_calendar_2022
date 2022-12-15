@@ -35,9 +35,10 @@ export class AppComponent implements OnInit {
 
     type Dir = {
       type: 'dir';
-      size: null;
+      size: number;
       name: string;
-      files?: File[];
+      files: File[];
+      folders: {};
     };
 
     type Entries = (Command | File | Dir)[];
@@ -45,7 +46,6 @@ export class AppComponent implements OnInit {
     type Disk = {
       [key: string]: Disk | number;
     };
-
 
     const parsetInput = (entries: string[]): Entries => {
       return entries.map((entry) => {
@@ -59,7 +59,7 @@ export class AppComponent implements OnInit {
         } else {
           const [type, name] = entry.split(' ');
           if (type === 'dir') {
-            return { type, name, size: 0 } as Dir;
+            return { type, name, size: 0, folders: [], files: [] } as Dir;
           } else {
             return { type: 'file', size: Number(type), name } as File;
           }
@@ -71,17 +71,74 @@ export class AppComponent implements OnInit {
       const entries: string[] = res
         .split('\n')
         .map((l) => cleanLine(l))
-        .slice(0, 14);
+        .slice(0, 50);
       const structure: Entries = parsetInput(entries);
-      console.log({ structure });
+      console.log({ entries, structure });
 
-      const disk = { '/': {} };
-      structure.forEach((line: Command | File | Dir) => {
-        console.log({ ...line }, _.get(disk, '/'));
-        if(line.type === 'command'){
-          console.log(_.get(line, ''))
+      const rootEntry: Dir = {
+        type: 'dir',
+        name: '/',
+        size: 0,
+        files: [],
+        folders: [],
+      };
+      const disk = { [rootEntry.name]: rootEntry };
+      let path = [];
+      const getPath = () => path.join('.folders.');
+      const setSizeParents = (size: number, pathTmp: any[]) => {
+        const pwd = pathTmp.join('.folders.');
+        let dir: Dir = _.get(disk, pwd);
+        dir = {
+          ...dir,
+          folders: { ...dir.folders },
+          size: dir.size + size,
+        };
+        _.set(disk, pwd, dir);
+        if (pathTmp.length > 1) {
+          pathTmp.pop();
+          setSizeParents(size, pathTmp);
+        }
+      };
+
+      //Build disk
+      structure.forEach((line: Command | File | Dir, index) => {
+        if (line.type === 'command') {
+          if (line.command === 'cd') {
+            //cd
+            if (line.arg === '..') {
+              path.pop();
+            } else if (line.arg === '/') {
+              path = ['/'];
+            } else {
+              path.push(line.arg);
+            }
+          } else {
+            //ls
+          }
+        } else if (line.type === 'dir') {
+          let dir: Dir = _.get(disk, getPath());
+          dir = {
+            ...dir,
+            folders: { ...dir.folders, [line.name]: line },
+          };
+          _.set(disk, getPath(), dir);
+        } else if (line.type === 'file') {
+          let dir = _.get(disk, getPath());
+          dir = {
+            ...dir,
+            files: _.concat(dir.files, line),
+          };
+          _.set(disk, getPath(), dir);
+          setSizeParents(line.size, _.cloneDeep(path));
         }
       });
+
+      console.log({ disk });
+
+      //part 1
+      const max = 100000;
+      const sizes = [];
+      console.log(_.filter(disk, (el) => el.type === 'dir' && el.size > 0));
     });
   }
 
