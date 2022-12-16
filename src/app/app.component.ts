@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, VERSION } from '@angular/core';
 import * as _ from 'lodash';
-import { slice } from 'lodash';
+import { size, slice } from 'lodash';
 
 const cleanLine = (line) =>
   line.includes('\r') ? line.substring(0, line.length - 1) : line;
@@ -17,8 +17,10 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.daySeven();
+    this.dayEight();
   }
+
+  dayEight() {}
 
   daySeven() {
     type Command = {
@@ -68,10 +70,7 @@ export class AppComponent implements OnInit {
     };
 
     this.call(7).subscribe((res) => {
-      const entries: string[] = res
-        .split('\n')
-        .map((l) => cleanLine(l))
-        .slice(0, 50);
+      const entries: string[] = res.split('\n').map((l) => cleanLine(l));
       const structure: Entries = parsetInput(entries);
       console.log({ entries, structure });
 
@@ -137,8 +136,35 @@ export class AppComponent implements OnInit {
 
       //part 1
       const max = 100000;
-      const sizes = [];
-      console.log(_.filter(disk, (el) => el.type === 'dir' && el.size > 0));
+      let size = 0;
+      const checkSize = (dir: Dir) => {
+        if (dir.type === 'dir' && dir.size <= max) {
+          size = size + dir.size;
+        }
+        _.values(dir.folders).forEach((subDir) => {
+          checkSize(subDir as Dir);
+        });
+      };
+      checkSize(_.get(disk, '/'));
+      console.log({ size });
+
+      //part 2
+      const updateSize = 30000000;
+      const fileSystemSize = 70000000;
+      const currentSize = _.get(disk, '/').size;
+      const remainingSpace = fileSystemSize - currentSize;
+      const candidates = [];
+      console.log({ fileSystemSize, updateSize, currentSize, remainingSpace });
+      const checkForDelete = (dir: Dir) => {
+        if (dir.type === 'dir' && remainingSpace + dir.size >= updateSize) {
+          candidates.push(dir.size);
+        }
+        _.values(dir.folders).forEach((subDir) => {
+          checkForDelete(subDir as Dir);
+        });
+      };
+      checkForDelete(_.get(disk, '/'));
+      console.log({ candidates, candidate: _.min(candidates) });
     });
   }
 
