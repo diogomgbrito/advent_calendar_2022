@@ -25,16 +25,13 @@ export class AppComponent implements OnInit {
       const entries: string[] = res.split('\n').map((l) => cleanLine(l));
       console.log({ entries });
 
-      const matrix: { height: number; visible: boolean }[][] = entries
-        .slice(0, 10)
-        .map((entry) =>
+      const matrix: { height: number; visible: boolean; nbs: number[] }[][] =
+        entries.slice(0, 10).map((entry) =>
           entry
             .split('')
             .slice(0, 10)
-            .map((n) => ({ height: Number(n), visible: true }))
+            .map((n) => ({ height: Number(n), visible: true, nbs: [] }))
         );
-
-      console.log({ matrix });
 
       //Compute visibilities
       matrix.forEach((row, idxRow) => {
@@ -52,17 +49,25 @@ export class AppComponent implements OnInit {
               nbBottom.height,
               nbLeft.height,
             ];
-            console.log(
-              { ...tree, nbTop, nbRight, nbBottom, nbLeft, nbs },
-              nbs.findIndex((nb) => nb > tree.height) !== -1
-            );
+            /*console.log(
+              { ...tree, nbs },
+              nbs.findIndex((nb) => nb < tree.height),
+              nbs.findIndex((nb) => nb < tree.height) !== -1
+            );*/
             matrix[idxRow][idxTree].visible =
-              nbs.findIndex((nb) => nb > tree.height) === -1;
+              nbs.findIndex((nb) => nb < tree.height) !== -1;
+
+            matrix[idxRow][idxTree].nbs = nbs;
           }
         });
       });
 
-      console.log({ matrix });
+      const visibleTrees = _.sum(
+        matrix.map((res) => {
+          return res.filter((tree) => tree.visible).length;
+        })
+      );
+      console.log({ visibleTrees });
     });
   }
 
