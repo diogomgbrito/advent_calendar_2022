@@ -20,7 +20,51 @@ export class AppComponent implements OnInit {
     this.dayEight();
   }
 
-  dayEight() {}
+  dayEight() {
+    this.call(8).subscribe((res) => {
+      const entries: string[] = res.split('\n').map((l) => cleanLine(l));
+      console.log({ entries });
+
+      const matrix: { height: number; visible: boolean }[][] = entries
+        .slice(0, 10)
+        .map((entry) =>
+          entry
+            .split('')
+            .slice(0, 10)
+            .map((n) => ({ height: Number(n), visible: true }))
+        );
+
+      console.log({ matrix });
+
+      //Compute visibilities
+      matrix.forEach((row, idxRow) => {
+        row.forEach((tree, idxTree) => {
+          const nbLeft = idxTree > 0 ? row[idxTree - 1] : null;
+          const nbRight = idxTree < row.length - 1 ? row[idxTree + 1] : null;
+          const nbTop = idxRow > 0 ? matrix[idxRow - 1][idxTree] : null;
+          const nbBottom =
+            idxRow < matrix.length - 1 ? matrix[idxRow + 1][idxTree] : null;
+          //console.log({ ...tree, nbTop, nbRight, nbBottom, nbLeft });
+          if (nbTop && nbRight && nbBottom && nbLeft) {
+            const nbs = [
+              nbTop.height,
+              nbRight.height,
+              nbBottom.height,
+              nbLeft.height,
+            ];
+            console.log(
+              { ...tree, nbTop, nbRight, nbBottom, nbLeft, nbs },
+              nbs.findIndex((nb) => nb > tree.height) !== -1
+            );
+            matrix[idxRow][idxTree].visible =
+              nbs.findIndex((nb) => nb > tree.height) === -1;
+          }
+        });
+      });
+
+      console.log({ matrix });
+    });
+  }
 
   daySeven() {
     type Command = {
